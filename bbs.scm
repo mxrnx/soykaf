@@ -1,20 +1,12 @@
 #!/usr/bin/csi -s 
 
-;;; CONFIG STARTS HERE ;;;
-(define title "scheme bbs")		; the title of your board
-(define subtitle "tiny scheme board")	; tagline displayed under the title
+(load "conf.scm")
+(load "tag.scm")
 
-(define defname "anonymous")		; name to use when user doesn't fill one in
-
-(define self "bbs.scm")			; name of this file
-
-(define mysql-host "localhost")
-(define mysql-user "root")
-(define mysql-pass "welkom123")
-(define mysql-schema "shima")
-;;; CONFIG ENDS HERE ;;;
-
+(use regex)
 (use mysql-client)
+
+; sql 
 (define con (make-mysql-connection mysql-host mysql-user mysql-pass mysql-schema))
 
 (define (table-exists? table)
@@ -27,44 +19,67 @@
 (define (table-create table)
   (con (string-append "create table " table " (primary key(no), no int not null auto_increment, name text, com text not null)")))
 
-(define (tag t cont)
-  (string-append "<" t ">" cont "</" t ">"))
+(define (make-post-list query)
+  (map (lambda (s)
+	 (define arg (cdr (string-split s "=")))
+	 (if (not (null? arg))
+	   (car arg)
+	   '()))
+       (string-split query "&")))
 
-(define (div id cont)
-  (string-append "<div id='" id "'>" cont "</div> "))
+(define (add-post postlist)
+  (define name (if (null? (car postlist)) defname (car postlist)))
+  (when (null? (cadr postlist)) (display "Comment empty, post discarded.") (exit 1))
+  (when (not (string? (cadr postlist))) (display "Malformed request, post discarded.") (exit 1))
+  (define com (cadr postlist))
+  (display (con (string-append "insert into " table " (name, com) values ('" name "', '" com "')")))
+  #t)
 
-(define (divc id cont)
-  (string-append "<div class='" id "'>" cont "</div> "))
+; html bits
+(define (url-decode html-string)			; TODO: automatically do this
+  (string-translate* html-string '(("%0D%0A" . "<br />")
+				   ("%0D" . "<br />")
+				   ("%21" . "!")
+				   ("%26" . "&")
+				   ("%2B" . "+")
+				   ("%2C" . ",")
+				   ("%2E" . ",")
+				   ("%3B" . ";")
+				   ("%3F" . "?")
+				   ("+" . " ")
+				   ("%23955" . "&lambda;")
+				   ("%25" . "%"))))
 
-(define (span class cont)
-  (string-append "<span class='" class "'>" cont "</span> "))
-
-(define encodingtag "<meta content='utf-8' />")
 
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
 
 (define (wrap header body)
-  (string-append "<!doctype html>" (tag "html" (string-append (tag "head" header) (tag "body" body)))))
+  (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
-(define (formatpost row)
-  (divc "post" (string-append
-		 (span "num" (car row))
-		 (span "name" (if (mysql-null? (cadr row))
-				defname
-				(cadr row)))
-		 (span "com" (caddr row)))))
+(define (display-postform)
+  (string-append "<form action='" self "' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form"))
+
+(define (format-post row)
+  (div-c "post" (string-append
+		  (tag "span" #f "num" (car row))
+		  (tag "span" #f "name" (if (mysql-null? (cadr row))
+					  defname
+					  (cadr row)))
+		  (tag "span" #f "com" (url-decode (caddr row))))))
 
 (define (display-post curs fetch)
   (define row (fetch))
   (if (not (or (mysql-null? row) (eqv? #f row)))
     (begin
-      (define curs (string-append curs (formatpost row)))
+      (define curs (string-append curs (format-post row)))
       (display-post curs fetch))
     curs))
 
 (define (display-posts)
   (define fetch (con "select * from posts"))
   (display-post "" fetch))
+
+(define display-foot " - soykaf bbs - ")
 
 (define (displayheader)
   (display "Content-Type: text/html")
@@ -74,16 +89,25 @@
 (define (displaypage)
   (display
     (wrap 
-      (string-append (tag "title" title) encodingtag)
-      (string-append (tag "h1" (fancytitle)) (tag "h2" subtitle) (div "posts" (display-posts))))))
+      (string-append (tag-s "title" title) encodingtag)
+      (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (div "postform" (display-postform)) (div "posts" (display-posts)) (div "foot" display-foot)))))
 
-(define displayfooter 0)
+(define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
 
 ; prepare
 (if (not (table-exists? "posts"))
   (table-create "posts"))
 
 ; show page
-(displayheader)
-(displaypage)
+;(if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
+(if (string=? (get-environment-variable "REQUEST_METHOD") "POST")
+  (begin
+    (displayheader)
+    (if (add-post (make-post-list (read-line (current-input-port))))
+      (display "Post added. Refreshing...")
+      (display "Could not post. Did you fill in a comment?"))
+    (refresh))
+  (begin
+    (displayheader)
+    (displaypage)))
 (newline)
