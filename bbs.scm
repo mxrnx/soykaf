@@ -4,6 +4,8 @@
 (load "tag.scm")
 
 (use mysql-client)
+(use regex)
+(require-extension irregex)
 
 ; sql 
 (define con (make-mysql-connection mysql-host mysql-user mysql-pass mysql-schema))
@@ -30,19 +32,23 @@
 				   ("%2C" . ",")
 				   ("%2E" . ",")
 				   ("%3B" . ";")
+				   ("%3E" . "&gt;")
 				   ("%3F" . "?")
 				   ("%5E" . "^")
 				   ("+" . " ")
 				   ("%23955" . "&lambda;")
 				   ("%25" . "%"))))
 
+(define (apply-markup text)
+  (string-substitute "&gt;(.*?)$" "<span class='quote'>&gt;\\1</span>" text))
+
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
-(define (display-postform)
-  (string-append "<form action='submit.scm' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form"))
+(define (make-postform)
+  (string-append "<form action='submit.scm' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form>"))
 
 (define (format-post row)
   (div-c "post" (string-append
@@ -50,32 +56,32 @@
 		  (tag "span" #f "name" (if (mysql-null? (cadr row))
 					  defname
 					  (cadr row)))
-		  (tag "span" #f "com" (url-decode (caddr row))))))
+		  (tag "span" #f "com" (apply-markup (url-decode (caddr row)))))))
 
-(define (display-post curs fetch)
+(define (make-post curs fetch)
   (define row (fetch))
   (if (not (or (mysql-null? row) (eqv? #f row)))
     (begin
       (define curs (string-append curs (format-post row)))
-      (display-post curs fetch))
+      (make-post curs fetch))
     curs))
 
-(define (display-posts)
+(define (make-posts)
   (define fetch (con "select * from posts"))
-  (display-post "" fetch))
+  (make-post "" fetch))
 
-(define display-foot " - soykaf bbs - ")
+(define make-foot " - soykaf bbs - ")
 
-(define (displayheader)
+(define (display-header)
   (display "Content-Type: text/html")
   (newline)
   (newline))
 
-(define (displaypage)
+(define (display-page)
   (display
     (wrap 
       (string-append (tag-s "title" title) encodingtag)
-      (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (div "postform" (display-postform)) (div "posts" (display-posts)) (div "foot" display-foot)))))
+      (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (div "postform" (make-postform)) (div "posts" (make-posts)) (div "foot" make-foot)))))
 
 (define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
 
@@ -85,6 +91,6 @@
 
 ; show page
 (if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
-(displayheader)
-(displaypage)
+(display-header)
+(display-page)
 (newline)
