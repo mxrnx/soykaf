@@ -3,7 +3,6 @@
 (load "conf.scm")
 (load "tag.scm")
 
-(use regex)
 (use mysql-client)
 
 ; sql 
@@ -19,37 +18,23 @@
 (define (table-create table)
   (con (string-append "create table " table " (primary key(no), no int not null auto_increment, name text, com text not null)")))
 
-(define (make-post-list query)
-  (map (lambda (s)
-	 (define arg (cdr (string-split s "=")))
-	 (if (not (null? arg))
-	   (car arg)
-	   '()))
-       (string-split query "&")))
-
-(define (add-post postlist)
-  (define name (if (null? (car postlist)) defname (car postlist)))
-  (when (null? (cadr postlist)) (display "Comment empty, post discarded.") (exit 1))
-  (when (not (string? (cadr postlist))) (display "Malformed request, post discarded.") (exit 1))
-  (define com (cadr postlist))
-  (display (con (string-append "insert into " table " (name, com) values ('" name "', '" com "')")))
-  #t)
-
 ; html bits
-(define (url-decode html-string)			; TODO: automatically do this
+(define (url-decode html-string)			; HACK
   (string-translate* html-string '(("%0D%0A" . "<br />")
 				   ("%0D" . "<br />")
 				   ("%21" . "!")
+				   ("%23" . "#")
+				   ("%24" . "$")
 				   ("%26" . "&")
 				   ("%2B" . "+")
 				   ("%2C" . ",")
 				   ("%2E" . ",")
 				   ("%3B" . ";")
 				   ("%3F" . "?")
+				   ("%5E" . "^")
 				   ("+" . " ")
 				   ("%23955" . "&lambda;")
 				   ("%25" . "%"))))
-
 
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
 
@@ -57,7 +42,7 @@
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
 (define (display-postform)
-  (string-append "<form action='" self "' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form"))
+  (string-append "<form action='submit.scm' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form"))
 
 (define (format-post row)
   (div-c "post" (string-append
@@ -99,15 +84,7 @@
   (table-create "posts"))
 
 ; show page
-;(if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
-(if (string=? (get-environment-variable "REQUEST_METHOD") "POST")
-  (begin
-    (displayheader)
-    (if (add-post (make-post-list (read-line (current-input-port))))
-      (display "Post added. Refreshing...")
-      (display "Could not post. Did you fill in a comment?"))
-    (refresh))
-  (begin
-    (displayheader)
-    (displaypage)))
+(if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
+(displayheader)
+(displaypage)
 (newline)
