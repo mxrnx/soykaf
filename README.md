@@ -3,7 +3,6 @@ tiny bbs in scheme
 
 ## dependencies
 * [CHICKEN](http://wiki.call-cc.org/) as compiler
-* [regex](http://wiki.call-cc.org/eggref/4/regex)
 * [mysql-client](http://wiki.call-cc.org/eggref/4/mysql-client)
 
 ## installation
