@@ -7,4 +7,3 @@
 (define (tag-s t cont) (tag t #f #f cont))
 (define (div id cont) (tag "div" id #f cont))
 (define (div-c class cont) (tag "div" #f class cont))
-(define encodingtag "<meta content='utf-8' />")

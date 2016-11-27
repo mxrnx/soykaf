@@ -32,8 +32,10 @@
 				   ("%2C" . ",")
 				   ("%2E" . ",")
 				   ("%3B" . ";")
+				   ("%3C" . "&lt;")
 				   ("%3E" . "&gt;")
 				   ("%3F" . "?")
+				   ("%40" . "@")
 				   ("%5E" . "^")
 				   ("+" . " ")
 				   ("%23955" . "&lambda;")
@@ -80,7 +82,7 @@
 (define (display-page)
   (display
     (wrap 
-      (string-append (tag-s "title" title) encodingtag)
+      (tag-s "title" title)
       (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (div "postform" (make-postform)) (div "posts" (make-posts)) (div "foot" make-foot)))))
 
 (define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
