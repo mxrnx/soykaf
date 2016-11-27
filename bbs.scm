@@ -72,7 +72,7 @@
   (define fetch (con "select * from posts"))
   (make-post "" fetch))
 
-(define make-foot " - soykaf bbs - ")
+(define make-foot " - <a href='https://github.com/knarka/soykaf/'>soykaf bbs</a> - ")
 
 (define (display-header)
   (display "Content-Type: text/html")
