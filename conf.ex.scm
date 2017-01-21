@@ -5,8 +5,8 @@
 
 (define self "bbs.scm")			; name of the main script file
 
-(define mysql-host "CHANGEME")		; host of your mysql server
-(define mysql-user "CHANGEME")		; mysql user
+(define mysql-host "localhost")		; host of your mysql server (usually localhost)
+(define mysql-user "root")		; mysql user
 (define mysql-pass "CHANGEME")		; mysql pasword
 (define mysql-schema "CHANGEME")	; database to use
-(define table "CHANGEME")		; table to use
+(define table "soykaf_posts")		; table to use
