@@ -2,7 +2,7 @@
   (string-append "<" t 
 		 (if (not (eqv? id #f)) (string-append " id='" id "'") "")
 		 (if (not (eqv? class #f)) (string-append " class='" class "'") "")
-		 ">" cont "</" t "> "))
+		 ">" cont "</" t ">"))
 
 (define (tag-s t cont) (tag t #f #f cont))
 (define (div id cont) (tag "div" id #f cont))
