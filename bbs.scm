@@ -42,9 +42,12 @@
 				   ("%25" . "%"))))
 
 (define (apply-markup text)
-  (string-substitute "&gt;(.*?)$" "<span class='quote'>&gt;\\1</span>" text))
+  (string-substitute "((?!&gt;)|^)&gt;(.*?)<br \/>" "\\1<span class='quote'>&gt;\\2</span><br />" (string-substitute "&gt;&gt;([0-9]+?)" "<a href='#r\\1'>&gt;&gt;\\1</a>" text)))
 
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
+
+(define (make-logo)
+  (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (a self "update") " / " (a "manage.scm" "manage") " / " (a "" "nothing"))))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
@@ -60,8 +63,7 @@
 					  defname
 					  (url-decode (cadr row))))
 		  " "
-		  (tag "span" #f "com" (apply-markup (url-decode (caddr row))))
-		  "<hr />")))
+		  (tag "span" #f "com" (apply-markup (url-decode (caddr row)))))))
 
 (define (make-post curs fetch)
   (define row (fetch))
@@ -86,7 +88,7 @@
   (display
     (wrap 
       (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
-      (string-append (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle))) (a self "update") "/" (div "postform" (make-postform)) "<hr />" (div "posts" (make-posts)) (div "foot" make-foot)))))
+      (string-append (make-logo) (div "postform" (make-postform)) (div "posts" (make-posts)) (div "foot" make-foot)))))
 
 (define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
 
