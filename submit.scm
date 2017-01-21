@@ -7,7 +7,7 @@
 (define con (make-mysql-connection mysql-host mysql-user mysql-pass mysql-schema))
 
 (define (redirect page)
-  (display (string-append "<meta http-equiv='refresh' content='0;URL=" self "' />")))
+  (display (string-append "<meta http-equiv='refresh' content='0;URL=" page "' />")))
 
 (define (make-post-list query)
   (map (lambda (s)
