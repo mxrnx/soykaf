@@ -50,15 +50,18 @@
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
 (define (make-postform)
-  (string-append "<form action='submit.scm' method='post'><input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form>"))
+  (string-append "<form action='submit.scm' method='post'><label for='name'>name</label> <input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form>"))
 
 (define (format-post row)
   (div-c "post" (string-append
-		  (tag "span" #f "num" (car row))
+		  "<a href='" self "#r" (car row) "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
+		  " "
 		  (tag "span" #f "name" (if (mysql-null? (cadr row))
 					  defname
-					  (cadr row)))
-		  (tag "span" #f "com" (apply-markup (url-decode (caddr row)))))))
+					  (url-decode (cadr row))))
+		  " "
+		  (tag "span" #f "com" (apply-markup (url-decode (caddr row))))
+		  "<hr />")))
 
 (define (make-post curs fetch)
   (define row (fetch))
@@ -69,10 +72,10 @@
     curs))
 
 (define (make-posts)
-  (define fetch (con "select * from posts"))
+  (define fetch (con "select * from posts order by no asc"))
   (make-post "" fetch))
 
-(define make-foot " - <a href='https://github.com/knarka/soykaf/'>soykaf</a> - ")
+(define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")
 
 (define (display-header)
   (display "Content-Type: text/html")
@@ -82,8 +85,8 @@
 (define (display-page)
   (display
     (wrap 
-      (tag-s "title" title)
-      (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (div "postform" (make-postform)) (div "posts" (make-posts)) (div "foot" make-foot)))))
+      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
+      (string-append (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle))) (a self "update") "/" (div "postform" (make-postform)) "<hr />" (div "posts" (make-posts)) (div "foot" make-foot)))))
 
 (define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
 
