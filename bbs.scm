@@ -25,9 +25,11 @@
   (string-translate* html-string '(("%0D%0A" . "<br />")
 				   ("%0D" . "<br />")
 				   ("%21" . "!")
+				   ("%22" . "\"")
 				   ("%23" . "#")
 				   ("%24" . "$")
 				   ("%26" . "&")
+				   ("%27" . "'")
 				   ("%2B" . "+")
 				   ("%2C" . ",")
 				   ("%2E" . ",")
@@ -42,7 +44,7 @@
 				   ("%25" . "%"))))
 
 (define (apply-markup text)
-  (string-substitute "((?!&gt;)|^)&gt;(.*?)<br \/>" "\\1<span class='quote'>&gt;\\2</span><br />" (string-substitute "&gt;&gt;([0-9]+?)" "<a href='#r\\1'>&gt;&gt;\\1</a>" text)))
+  (string-substitute "&gt;&gt;([0-9]+)" "<a href='#r\\1'>&gt;&gt;\\1</a>" (string-substitute "^&gt;(?!&gt;)(.*?)<br \/>" "<span class='quote'>&gt;\\1</span><br />" (string-substitute "<br \/>&gt;(?!&gt;)(.*?)<br \/>" "<br /><span class='quote'>&gt;\\1</span><br />" text #t) #t) #t))
 
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
 
@@ -58,7 +60,7 @@
 (define (format-post row)
   (div-c "post" (string-append
 		  "<a href='" self "#r" (car row) "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
-		  " "
+		  " / "
 		  (tag "span" #f "name" (if (mysql-null? (cadr row))
 					  defname
 					  (url-decode (cadr row))))
