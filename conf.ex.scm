@@ -1,5 +1,5 @@
 (define title "soykaf")			; the title of your board
-(define subtitle "site running soykaf")	; tag-sline displayed under the title
+(define subtitle "site running soykaf")	; tagline displayed under the title
 
 (define defname "anonymous")		; name to use when user doesn't fill one in
 
