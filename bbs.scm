@@ -18,7 +18,7 @@
     #t))
 
 (define (table-create table)
-  (con (string-append "create table " table " (primary key(no), no int not null auto_increment, name text, com text not null)")))
+  (con (string-append "create table " table " (primary key(no), no int not null auto_increment, reply int not null, time timestamp, name text, com text not null)")))
 
 ; html bits
 (define (url-decode html-string)			; HACK
@@ -44,40 +44,50 @@
 				   ("%25" . "%"))))
 
 (define (apply-markup text)
-  (string-substitute "&gt;&gt;([0-9]+)" "<a href='#r\\1'>&gt;&gt;\\1</a>" (string-substitute "^&gt;(?!&gt;)(.*?)<br \/>" "<span class='quote'>&gt;\\1</span><br />" (string-substitute "<br \/>&gt;(?!&gt;)(.*?)<br \/>" "<br /><span class='quote'>&gt;\\1</span><br />" text #t) #t) #t))
+  (string-substitute "&gt;&gt;([0-9]+)" "<a href='#r\\1'>&gt;&gt;\\1</a>" (string-substitute "^&gt;(?!&gt;)(.*?)<br />" "<span class='quote'>&gt;\\1</span><br />" (string-substitute "<br />&gt;(?!&gt;)(.*?)<br />" "<br /><span class='quote'>&gt;\\1</span><br />" text #t) #t) #t))
 
 (define (fancytitle) (string-append "&lambda;::<a href='" self "'>" title "</a>"))
 
-(define (make-logo)
-  (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle) (a self "update") " / " (a "manage.scm" "manage") " / " (a "" "nothing"))))
+(define (make-logo reply)
+  (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle)
+			     (a self "index") " / " (a "manage.scm" "manage") " / "
+			     (if (eqv? reply 0)
+			       (tag-s "span" "viewing index")
+			       (tag-s "span" (string-append "viewing thread " (number->string reply)))))))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
-(define (make-postform)
-  (string-append "<form action='submit.scm' method='post'><label for='name'>name</label> <input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea></form>"))
+(define (make-postform reply)
+  (string-append "<form action='submit.scm' method='post'><label for='name'>name</label> <input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea><input type='hidden' name='reply' value='" (number->string reply) "' /></form>"))
 
-(define (format-post row)
+(define (format-post row reply)
   (div-c "post" (string-append
-		  "<a href='" self "#r" (car row) "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
+		  "<a href='" (if (eq? reply 0)
+				(string-append "?" (car row))
+				(string-append self "#r" (car row)))
+		  ;"<a href='" (string-append self "?" (car row))
+		  "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
 		  " / "
-		  (tag "span" #f "name" (if (mysql-null? (cadr row))
+		  (tag "span" #f "name" (if (mysql-null? (cadddr row))
 					  defname
-					  (url-decode (cadr row))))
+					  (url-decode (cadddr row))))
 		  " "
-		  (tag "span" #f "com" (apply-markup (url-decode (caddr row)))))))
+		  (tag "span" #f "com" (apply-markup (url-decode (car (cddddr row))))))))
 
-(define (make-post curs fetch)
+(define (make-post curs fetch reply)
   (define row (fetch))
   (if (not (or (mysql-null? row) (eqv? #f row)))
     (begin
-      (define curs (string-append curs (format-post row)))
-      (make-post curs fetch))
+      (define curs (string-append curs (format-post row reply)))
+      (make-post curs fetch reply))
     curs))
 
-(define (make-posts)
-  (define fetch (con "select * from posts order by no asc"))
-  (make-post "" fetch))
+(define (make-posts reply)
+  (define fetch (con (string-append "select * from posts where no = '" (number->string reply) "'")))
+  (define op (make-post "" fetch reply))
+  (define fetch (con (string-append "select * from posts where reply = '" (number->string reply) "'")))
+  (string-append op (make-post "" fetch reply)))
 
 (define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")
 
@@ -86,20 +96,34 @@
   (newline)
   (newline))
 
-(define (display-page)
+(define (display-page reply)
   (display
     (wrap 
       (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
-      (string-append (make-logo) (div "postform" (make-postform)) (div "posts" (make-posts)) (div "foot" make-foot)))))
+      (string-append (make-logo reply) (div "postform" (make-postform reply)) (div "posts" (make-posts reply)) (div "foot" make-foot)))))
+
+(define (make-arg-list query)
+  (map (lambda (s)
+	 (define arg (cdr (string-split s "=")))
+	 (if (not (null? arg))
+	   (car arg)
+	   '()))
+       (string-split query "&")))
 
 (define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
+
+(define (redirect page)
+  (display (string-append "<meta http-equiv='refresh' content='0;URL=" page "' />")))
 
 ; prepare
 (if (not (table-exists? "posts"))
   (table-create "posts"))
 
-; show page
+(define view (string->number (get-environment-variable "QUERY_STRING")))
+(if (eqv? view #f) (define view 0))
+
+; write pages
 (if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
 (display-header)
-(display-page)
+(display-page view)
 (newline)
