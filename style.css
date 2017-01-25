@@ -21,7 +21,6 @@ a:hover {
 	color: #2F6D82;
 }
 #logo {
-	width:300px;
 	display:inline-block;
 	float: left;
 }
@@ -40,9 +39,13 @@ a:hover {
 	clear: both;
 	margin-top: 7px;
 }
+.name, .num {
+	font-weight: bold;
+}
 .com {
 	display: block;
 	clear: both;
+	margin: 10px auto auto 31px;
 }
 .quote {
 	font-style: italic;
