@@ -65,8 +65,7 @@
   (div-c "post" (string-append
 		  "<a href='" (if (eq? reply 0)
 				(string-append "?" (car row))
-				(string-append self "#r" (car row)))
-		  ;"<a href='" (string-append self "?" (car row))
+				(string-append "?" (number->string reply) "#r" (car row)))
 		  "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
 		  " / "
 		  (tag "span" #f "name" (if (mysql-null? (cadddr row))
