@@ -9,7 +9,10 @@ body {
 	font-family: "Dejavu sans",sans-serif;
 }
 h1, h2, h3 {
-	line-height: 8.4px;
+	line-height: 8px;
+}
+h2 {
+	padding-top: 2px;
 }
 a {
 	text-decoration: none;
@@ -31,7 +34,10 @@ input[type="submit"] {
 	color: #454545;
 	background-color: #fdfdfd;
 	font-weight: bold;
-	border-width: 0px !important;
+	border-width: 2px;
+}
+textarea {
+	margin-top: 2px;
 }
 #logo {
 	display:inline-block;
