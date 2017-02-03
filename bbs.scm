@@ -17,7 +17,7 @@
     #f
     #t))
 
-(define (table-create table)
+(define (table-create! table)
   (con (string-append "create table " table " (primary key(no), no int not null auto_increment, reply int not null, time timestamp, name text, com text not null)")))
 
 ; html bits
@@ -90,17 +90,6 @@
 
 (define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")
 
-(define (display-header)
-  (display "Content-Type: text/html")
-  (newline)
-  (newline))
-
-(define (display-page reply)
-  (display
-    (wrap 
-      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
-      (string-append (make-logo reply) (div "postform" (make-postform reply)) (div "posts" (make-posts reply)) (div "foot" make-foot)))))
-
 (define (make-arg-list query)
   (map (lambda (s)
 	 (define arg (cdr (string-split s "=")))
@@ -109,20 +98,32 @@
 	   '()))
        (string-split query "&")))
 
-(define (refresh) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
+; non-functional display code follows
+(define (display-header!)
+  (display "Content-Type: text/html")
+  (newline)
+  (newline))
 
-(define (redirect page)
+(define (display-page! reply)
+  (display
+    (wrap 
+      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
+      (string-append (make-logo reply) (div "postform" (make-postform reply)) (div "posts" (make-posts reply)) (div "foot" make-foot)))))
+
+(define (refresh!) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
+
+(define (redirect! page)
   (display (string-append "<meta http-equiv='refresh' content='0;URL=" page "' />")))
 
 ; prepare
 (if (not (table-exists? "posts"))
-  (table-create "posts"))
+  (table-create! "posts"))
 
 (define view (string->number (get-environment-variable "QUERY_STRING")))
 (if (eqv? view #f) (define view 0))
 
 ; write pages
 (if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
-(display-header)
-(display-page view)
+(display-header!)
+(display-page! view)
 (newline)
