@@ -50,10 +50,12 @@
 
 (define (make-logo reply)
   (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle)
-			     (a self "index") " / " (a "manage.scm" "manage") " / "
-			     (if (eqv? reply 0)
-			       (tag-s "span" "viewing index")
-			       (tag-s "span" (string-append "viewing thread " (number->string reply)))))))
+			     (a self "index") " / " (a "?manage" "manage") " / "
+			     (if (string? reply)
+			       (tag-s "span" "manager mode")
+			       (if (eqv? reply 0)
+			         (tag-s "span" "viewing index")
+			         (tag-s "span" (string-append "viewing thread " (number->string reply))))))))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
@@ -104,6 +106,16 @@
   (newline)
   (newline))
 
+(define (display-manager!)
+  (define passwd (get-environment-variable "HTTP_COOKIE"))
+  (if (or (eq? passwd #f) (not (string=? passwd (string-append "managepass=" adminpass))))
+    (define form "<form method='post' action='login.scm'><input type='password' name='managepass' /><input type='submit' value='log in' /></form>")
+    (define form "<form method='post' action='login.scm'>logged in <input type='hidden' name='managepass' /><input type='submit' value='log out' /></form>"))
+  (display
+    (wrap 
+      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
+      (string-append (make-logo "") (div "postform" form) (div "foot" make-foot)))))
+
 (define (display-page! reply)
   (display
     (wrap 
@@ -119,11 +131,14 @@
 (if (not (table-exists? "posts"))
   (table-create! "posts"))
 
-(define view (string->number (get-environment-variable "QUERY_STRING")))
-(if (eqv? view #f) (define view 0))
-
-; write pages
 (if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
+
 (display-header!)
-(display-page! view)
+
+(define view (get-environment-variable "QUERY_STRING"))
+(define numv (string->number view))
+(if (eqv? numv #f) (define numv 0))
+(if (string=? view "manage")
+  (display-manager!)
+  (display-page! numv))
 (newline)

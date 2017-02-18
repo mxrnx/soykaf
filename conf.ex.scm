@@ -4,6 +4,7 @@
 (define defname "anonymous")		; name to use when user doesn't fill one in
 
 (define self "bbs.scm")			; name of the main script file
+(define adminpass "CHANGEME")		; management panel password
 
 (define mysql-host "localhost")		; host of your mysql server (usually localhost)
 (define mysql-user "root")		; mysql user
