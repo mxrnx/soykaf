@@ -90,6 +90,27 @@
   (define fetch (con (string-append "select * from posts where reply = '" (number->string reply) "'")))
   (string-append op (make-post "" fetch reply)))
 
+(define (format-manager-post row)
+  (tag-s "tr" (string-append
+		  (td (car row))
+		  (td (cadr row))
+		  (td (if (mysql-null? (cadddr row)) defname (url-decode (cadddr row))))
+		  (td (apply-markup (url-decode (car (cddddr row))))))))
+
+(define (make-manager-post curs fetch)
+  (define row (fetch))
+  (if (not (or (mysql-null? row) (eqv? #f row)))
+    (begin
+      (define curs (string-append curs (format-manager-post row)))
+      (make-manager-post curs fetch))
+    curs))
+
+(define (make-manager-posts!)
+  (define fetch (con (string-append "select * from posts")))
+  (tag-s "table" (string-append
+		   (tag "tr" "toprow" #f (string-append (td "no.") (td "reply") (td "name") (td "comment")))
+		   (make-manager-post "" fetch))))
+
 (define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")
 
 (define (make-arg-list query)
@@ -106,15 +127,17 @@
   (newline)
   (newline))
 
+(define (valid? passwd) (string=? passwd (string-append "managepass=" adminpass)))
+
 (define (display-manager!)
   (define passwd (get-environment-variable "HTTP_COOKIE"))
-  (if (or (eq? passwd #f) (not (string=? passwd (string-append "managepass=" adminpass))))
+  (if (or (eq? passwd #f) (not (valid? passwd)))
     (define form "<form method='post' action='login.scm'><input type='password' name='managepass' /><input type='submit' value='log in' /></form>")
     (define form "<form method='post' action='login.scm'>logged in <input type='hidden' name='managepass' /><input type='submit' value='log out' /></form>"))
   (display
     (wrap 
       (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
-      (string-append (make-logo "") (div "postform" form) (div "foot" make-foot)))))
+      (string-append (make-logo "") (div "postform" form) (if (valid? passwd) (make-manager-posts!) "") (div "foot" make-foot)))))
 
 (define (display-page! reply)
   (display

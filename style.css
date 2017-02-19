@@ -39,6 +39,13 @@ input[type="submit"] {
 textarea {
 	margin-top: 2px;
 }
+table {
+	width: 100%;
+	padding-top: 10px;
+}
+#toprow {
+	font-weight: bold;
+}
 #logo {
 	display:inline-block;
 	float: left;
