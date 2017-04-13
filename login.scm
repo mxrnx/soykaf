@@ -6,7 +6,6 @@
 
 (define con (make-mysql-connection mysql-host mysql-user mysql-pass mysql-schema))
 
-
 (if (string=? (get-environment-variable "REQUEST_METHOD") "POST")
   (begin
     (display "Content-Type: text/html\n\n")

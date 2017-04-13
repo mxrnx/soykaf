@@ -3,6 +3,9 @@
 (load "conf.scm")
 (load "tag.scm")
 
+(if (string=? lang "en") (load "str/en.scm"))
+(if (string=? lang "jp") (load "str/jp.scm"))
+
 (use mysql-client)
 (use regex)
 (require-extension irregex)
@@ -50,12 +53,12 @@
 
 (define (make-logo reply)
   (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle)
-			     (a self "index") " / " (a "?manage" "manage") " / "
+			     (a self "index") " / " (a "?manage" s-manage) " / "
 			     (if (string? reply)
-			       (tag-s "span" "manager mode")
+			       (tag-s "span" s-status-manage)
 			       (if (eqv? reply 0)
-			         (tag-s "span" "viewing index")
-			         (tag-s "span" (string-append "viewing thread " (number->string reply))))))))
+			         (tag-s "span" s-status-index)
+			         (tag-s "span" (string-append s-status-thread " " (number->string reply))))))))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
@@ -64,17 +67,23 @@
   (string-append "<form action='submit.scm' method='post'><label for='name'>name</label> <input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea><input type='hidden' name='reply' value='" (number->string reply) "' /></form>"))
 
 (define (format-post row reply)
-  (div-c "post" (string-append
-		  "<a href='" (if (eq? reply 0)
-				(string-append "?" (car row))
-				(string-append "?" (number->string reply) "#r" (car row)))
-		  "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
-		  " / "
-		  (tag "span" #f "name" (if (mysql-null? (cadddr row))
-					  defname
-					  (url-decode (cadddr row))))
-		  " "
-		  (tag "span" #f "com" (apply-markup (url-decode (car (cddddr row))))))))
+  (if (string=? (number->string reply) (car row))
+    (define c "post op")
+    (define c "post reply"))
+  (string-append
+    (div-c c (string-append
+	       "<a href='"
+	       (if (eq? reply 0)
+		 (string-append "?" (car row))
+		 (string-append "?" (number->string reply) "#r" (car row)))
+	       "'>" (tag "span" (string-append "r" (car row)) "num" (car row)) "</a>"
+	       " / "
+	       (tag "span" #f "name" (if (mysql-null? (cadddr row))
+				       defname
+				       (url-decode (cadddr row))))
+	       " "
+	       (tag "span" #f "com" (apply-markup (url-decode (car (cddddr row)))))))
+    (if (string=? c "post op") "<hr class='ophr' />" "")))
 
 (define (make-post curs fetch reply)
   (define row (fetch))

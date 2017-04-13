@@ -77,6 +77,15 @@ table {
 	font-style: italic;
 	color: #666;
 }
+.ophr {
+	width: 96%;
+	color: #cdcdcd;
+	float: left;
+	margin-top: 0px;
+	margin-bottom: 20px;
+	margin-left: 31px;
+	border-style: solid;
+}
 #foot {
 	padding-top: 10px;
 	text-align: center;
