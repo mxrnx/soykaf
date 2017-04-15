@@ -41,7 +41,15 @@ textarea {
 }
 table {
 	width: 100%;
-	padding-top: 10px;
+	border-collapse: collapse;
+}
+tr:nth-child(even) {
+	background-color: #e5e5e5;
+}
+td {
+	/*border-bottom: 1px solid #454545;*/
+	padding-right: 20px;
+	vertical-align: text-top;
 }
 #toprow {
 	font-weight: bold;
@@ -49,6 +57,7 @@ table {
 #logo {
 	display:inline-block;
 	float: left;
+	margin-bottom: 30px;
 }
 #postform {
 	margin-top:8px;

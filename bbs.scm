@@ -117,7 +117,7 @@
 (define (make-manager-posts!)
   (define fetch (con (string-append "select * from posts")))
   (tag-s "table" (string-append
-		   (tag "tr" "toprow" #f (string-append (td "no.") (td "reply") (td "name") (td "comment")))
+		   (tag "tr" "toprow" #f (string-append (td s-mm-no) (td s-mm-re) (td s-mm-name) (td s-mm-comment)))
 		   (make-manager-post "" fetch))))
 
 (define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")

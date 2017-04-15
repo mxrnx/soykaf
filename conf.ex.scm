@@ -1,6 +1,8 @@
 (define title "soykaf")			; the title of your board
 (define subtitle "site running soykaf")	; tagline displayed under the title
 
+(define lang "en")
+
 (define defname "anonymous")		; name to use when user doesn't fill one in
 
 (define self "bbs.scm")			; name of the main script file
