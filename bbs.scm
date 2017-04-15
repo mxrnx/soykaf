@@ -145,13 +145,13 @@
     (define form "<form method='post' action='login.scm'>logged in <input type='hidden' name='managepass' /><input type='submit' value='log out' /></form>"))
   (display
     (wrap 
-      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
+      (string-append (tag-s "title" title) "<link rel='stylesheet' href='css/style.css' />")
       (string-append (make-logo "") (div "postform" form) (if (valid? passwd) (make-manager-posts!) "") (div "foot" make-foot)))))
 
 (define (display-page! reply)
   (display
     (wrap 
-      (string-append (tag-s "title" title) "<link rel='stylesheet' href='style.css' />")
+      (string-append (tag-s "title" title) "<link rel='stylesheet' href='css/style.css' />")
       (string-append (make-logo reply) (div "postform" (make-postform reply)) (div "posts" (make-posts reply)) (div "foot" make-foot)))))
 
 (define (refresh!) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
