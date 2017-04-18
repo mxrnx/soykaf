@@ -24,8 +24,8 @@
   (con (string-append "insert into " table " (name, com, reply) values (" name ", '" com "', '" reply"')"))
   #t)
 
+(display "Content-Type: text/html\n\n")
 (if (string=? (get-environment-variable "REQUEST_METHOD") "POST")
   (begin
-    (display "Content-Type: text/html\n\n")
     (add-post! (make-post-list (read-line (current-input-port))))))
 (display (string-append "<meta http-equiv='refresh' content='0;URL=" self "' />"))

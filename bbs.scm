@@ -53,18 +53,18 @@
 
 (define (make-logo reply)
   (div "logo" (string-append (tag-s "h1" (fancytitle)) (tag-s "h2" subtitle)
-			     (a self "index") " / " (a "?manage" s-manage) " / "
+			     (a self s-index) " / " (a "?manage" s-manage) " / "
 			     (if (string? reply)
 			       (tag-s "span" s-status-manage)
 			       (if (eqv? reply 0)
 			         (tag-s "span" s-status-index)
-			         (tag-s "span" (string-append s-status-thread " " (number->string reply))))))))
+			         (tag-s "span" (string-append (string-substitute "NUM" (number->string reply) s-status-thread #t))))))))
 
 (define (wrap header body)
   (string-append "<!doctype html>" (tag-s "html" (string-append (tag-s "head" header) (tag-s "body" body)))))
 
 (define (make-postform reply)
-  (string-append "<form action='submit.scm' method='post'><label for='name'>name</label> <input type='text' name='name' /><input type='submit' value='Post' /><br /> <textarea name='com'></textarea><input type='hidden' name='reply' value='" (number->string reply) "' /></form>"))
+  (string-append "<form action='submit.scm' method='post'><label for='name'>" s-name " <input type='text' name='name' /><input type='submit' value='" s-post "' /><br /> <textarea name='com'></textarea><input type='hidden' name='reply' value='" (number->string reply) "' /></form>"))
 
 (define (format-post row reply)
   (if (string=? (number->string reply) (car row))
@@ -99,12 +99,16 @@
   (define fetch (con (string-append "select * from posts where reply = '" (number->string reply) "'")))
   (string-append op (make-post "" fetch reply)))
 
+(define (make-rm-button no)
+  (string-append "<form action='rm.scm' method='post'><input type='hidden' name='no' value='" no "' /><input type='submit' value='" s-mm-rm "' /></form>"))
+
 (define (format-manager-post row)
   (tag-s "tr" (string-append
 		  (td (car row))
 		  (td (cadr row))
 		  (td (if (mysql-null? (cadddr row)) defname (url-decode (cadddr row))))
-		  (td (apply-markup (url-decode (car (cddddr row))))))))
+		  (td (apply-markup (url-decode (car (cddddr row)))))
+		  (tag "td" #f "mmrm" (make-rm-button (car row))))))
 
 (define (make-manager-post curs fetch)
   (define row (fetch))
@@ -117,7 +121,7 @@
 (define (make-manager-posts!)
   (define fetch (con (string-append "select * from posts")))
   (tag-s "table" (string-append
-		   (tag "tr" "toprow" #f (string-append (td s-mm-no) (td s-mm-re) (td s-mm-name) (td s-mm-comment)))
+		   (tag "tr" "toprow" #f (string-append (td s-mm-no) (td s-mm-re) (td s-mm-name) (td s-mm-comment) (td "")))
 		   (make-manager-post "" fetch))))
 
 (define make-foot "- <a href='https://github.com/knarka/soykaf/'>soykaf</a> -")
@@ -145,13 +149,13 @@
     (define form "<form method='post' action='login.scm'>logged in <input type='hidden' name='managepass' /><input type='submit' value='log out' /></form>"))
   (display
     (wrap 
-      (string-append (tag-s "title" title) "<link rel='stylesheet' href='css/style.css' />")
+      (string-append (tag-s "title" title) "<meta charset='utf-8' /><link rel='stylesheet' href='css/style.css' />")
       (string-append (make-logo "") (div "postform" form) (if (valid? passwd) (make-manager-posts!) "") (div "foot" make-foot)))))
 
 (define (display-page! reply)
   (display
     (wrap 
-      (string-append (tag-s "title" title) "<link rel='stylesheet' href='css/style.css' />")
+      (string-append (tag-s "title" title) "<meta charset='utf-8' /><link rel='stylesheet' href='css/style.css' />")
       (string-append (make-logo reply) (div "postform" (make-postform reply)) (div "posts" (make-posts reply)) (div "foot" make-foot)))))
 
 (define (refresh!) (display (string-append "<meta http-equiv='refresh' content='1;URL=" self "' />")))
