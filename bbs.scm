@@ -119,7 +119,7 @@
     curs))
 
 (define (make-manager-posts!)
-  (define fetch (con (string-append "select * from posts")))
+  (define fetch (con (string-append "select * from posts order by no desc")))
   (tag-s "table" (string-append
 		   (tag "tr" "toprow" #f (string-append (td s-mm-no) (td s-mm-re) (td s-mm-name) (td s-mm-comment) (td "")))
 		   (make-manager-post "" fetch))))
@@ -134,7 +134,7 @@
 	   '()))
        (string-split query "&")))
 
-; non-functional display code follows
+; non-functional code follows
 (define (display-header!)
   (display "Content-Type: text/html")
   (newline)
