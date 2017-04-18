@@ -21,7 +21,7 @@
   (when (null? (caddr postlist)) (display "Malformed request, post discarded") (exit 1))
   (define com (cadr postlist))
   (define reply (caddr postlist))
-  (con (string-append "insert into " table " (name, com, reply) values (" name ", '" com "', '" reply"')"))
+  (con (string-append "insert into " table " (name, com, reply, ip) values (" name ", '" com "', '" reply"', '" (get-environment-variable "REMOTE_ADDR") "')"))
   #t)
 
 (display "Content-Type: text/html\n\n")

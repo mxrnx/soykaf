@@ -7,6 +7,6 @@
 (define s-post "post")				; submit text in the post form
 (define s-mm-no "no")
 (define s-mm-re "re")
-(define s-mm-name "name")
+(define s-mm-name "name/ip")
 (define s-mm-comment "comment")
 (define s-mm-rm "rm")

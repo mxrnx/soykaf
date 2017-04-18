@@ -21,7 +21,7 @@
     #t))
 
 (define (table-create! table)
-  (con (string-append "create table " table " (primary key(no), no int not null auto_increment, reply int not null, time timestamp, name text, com text not null)")))
+  (con (string-append "create table " table " (primary key(no), no int not null auto_increment, reply int not null, time timestamp, name text, com text not null, ip text not null)")))
 
 ; html bits
 (define (url-decode html-string)			; HACK
@@ -106,7 +106,9 @@
   (tag-s "tr" (string-append
 		  (td (car row))
 		  (td (cadr row))
-		  (td (if (mysql-null? (cadddr row)) defname (url-decode (cadddr row))))
+		  (td (string-append (if (mysql-null? (cadddr row)) defname (url-decode (cadddr row)))
+				     "<br />"
+				     (cadr (cddddr row))))
 		  (td (apply-markup (url-decode (car (cddddr row)))))
 		  (tag "td" #f "mmrm" (make-rm-button (car row))))))
 

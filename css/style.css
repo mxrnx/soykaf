@@ -48,13 +48,16 @@ tr:nth-child(even) {
 }
 td {
 	/*border-bottom: 1px solid #454545;*/
-	padding-right: 13px;
+	padding-right: 7px;
 	padding-left: 7px;
+	padding-bottom: 5px;
+	padding-top: 1px;
 	vertical-align: text-top;
 }
 .mmrm {
 	padding-right: 7px;
 	padding-left: 0px;
+	vertical-align: middle;
 }
 #toprow {
 	font-weight: bold;
