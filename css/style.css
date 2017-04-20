@@ -43,6 +43,7 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	margin-top: 20px;
+	display: inline-block;
 }
 tr:nth-child(even) {
 	background-color: #e5e5e5;
