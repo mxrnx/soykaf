@@ -42,6 +42,7 @@ textarea {
 table {
 	width: 100%;
 	border-collapse: collapse;
+	margin-top: 20px;
 }
 tr:nth-child(even) {
 	background-color: #e5e5e5;
@@ -62,10 +63,14 @@ td {
 #toprow {
 	font-weight: bold;
 }
+#banform {
+	display: inline-block;
+	float: left;
+}
 #logo {
 	display:inline-block;
 	float: left;
-	margin-bottom: 30px;
+	margin-bottom: 20px;
 }
 #postform {
 	margin-top:8px;
