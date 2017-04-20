@@ -142,11 +142,14 @@
   (newline)
   (newline))
 
-(define (valid? passwd) (string=? passwd (string-append "managepass=" adminpass)))
+(define (valid? passwd)
+  (if (not passwd)
+    #f
+    (string=? passwd (string-append "managepass=" adminpass))))
 
 (define (display-manager!)
   (define passwd (get-environment-variable "HTTP_COOKIE"))
-  (if (or (eq? passwd #f) (not (valid? passwd)))
+  (if (not (valid? passwd))
     (define form "<form method='post' action='login.scm'><input type='password' name='managepass' /><input type='submit' value='log in' /></form>")
     (define form "<form method='post' action='login.scm'>logged in <input type='hidden' name='managepass' /><input type='submit' value='log out' /></form>"))
   (display
