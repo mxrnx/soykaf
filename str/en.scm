@@ -10,3 +10,4 @@
 (define s-mm-name "name/ip")
 (define s-mm-comment "comment")
 (define s-mm-rm "rm")
+(define s-mm-ban "ban")
