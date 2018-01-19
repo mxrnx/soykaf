@@ -94,9 +94,9 @@
     curs))
 
 (define (make-posts reply)
-  (define fetch (con (string-append "select * from posts where no = '" (number->string reply) "'")))
+  (define fetch (con (string-append "select * from " table " where no = '" (number->string reply) "'")))
   (define op (make-post "" fetch reply))
-  (define fetch (con (string-append "select * from posts where reply = '" (number->string reply) "'")))
+  (define fetch (con (string-append "select * from " table " where reply = '" (number->string reply) "'")))
   (string-append op (make-post "" fetch reply)))
 
 (define (make-rm-button no)
@@ -121,7 +121,7 @@
     curs))
 
 (define (make-manager-posts!)
-  (define fetch (con (string-append "select * from posts order by no desc")))
+  (define fetch (con (string-append "select * from " table " order by no desc")))
   (string-append
     "<form id='banform' action='ban.scm' method='post'><input type='text' name='ip' /><input type='submit' value='" s-mm-ban "'</form>"
     (tag-s "table" (string-append
@@ -171,8 +171,8 @@
   (display (string-append "<meta http-equiv='refresh' content='0;URL=" page "' />")))
 
 ; prepare
-(if (not (table-exists? "posts"))
-  (table-create! "posts"))
+(if (not (table-exists? table))
+  (table-create! table))
 
 (if (eqv? (get-environment-variable "REQUEST_METHOD") #f) (exit 1)) ; not a cgi environment
 
