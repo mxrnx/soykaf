@@ -16,9 +16,7 @@
 (define (table-exists? table)
   (define fetch (con (string-append "show tables like '" table "'")))
   (define first (fetch))
-  (if (or (mysql-null? first) (eqv? #f first))
-    #f
-    #t))
+  (not (or (mysql-null? first) (eqv? #f first))))
 
 (define (table-create! table)
   (con (string-append "create table " table " (primary key(no), no int not null auto_increment, reply int not null, time timestamp, name text, com text not null, ip text not null)")))
